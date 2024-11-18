@@ -1,0 +1,108 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plant Companion</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f8ff;
+            text-align: center;
+            padding: 20px;
+        }
+        #conversation {
+            border: 2px solid #4CAF50;
+            padding: 20px;
+            margin: 20px auto;
+            width: 80%;
+            max-width: 500px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        #response {
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <h1>Talk to Your Plant Companion</h1>
+    <div id="conversation">
+        <p id="user-input">You: <em>(waiting for input...)</em></p>
+        <p id="emotion">Detected Emotion: <em>(none yet)</em></p>
+        <p id="response">Plant: <em>(waiting to respond...)</em></p>
+    </div>
+    <button onclick="startListening()">Talk</button>
+
+    <script>
+        // Predefined plant responses based on emotions
+        const responses = {
+            "stress": "I'm sorry to hear that. Even the strongest tree bends in the wind but doesn’t break. Let's breathe together... Inhale... and exhale slowly.",
+            "depression": "I’m here for you. Remember, even in the darkest nights, the stars still shine.",
+            "calm": "I'm feeling hydrated and happy, thanks for asking! How about you?",
+            "default": "I'm here for you. Can you tell me more about how you're feeling?"
+        };
+
+        // Start speech recognition
+        const startListening = () => {
+            const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.lang = 'en-US';
+
+            recognition.onstart = () => {
+                document.getElementById('response').innerText = "Listening...";
+            };
+
+            recognition.onresult = (event) => {
+                const userInput = event.results[0][0].transcript.toLowerCase();
+                document.getElementById('user-input').innerText = `You: ${userInput}`;
+                
+                // Analyze emotion based on speech patterns
+                const emotion = detectEmotion(userInput);
+                document.getElementById('emotion').innerText = `Detected Emotion: ${emotion}`;
+
+                // Get response based on emotion
+                const response = responses[emotion] || responses["default"];
+                document.getElementById('response').innerText = `Plant: ${response}`;
+                
+                // Speak the plant's response
+                const utterance = new SpeechSynthesisUtterance(response);
+                speechSynthesis.speak(utterance);
+            };
+
+            recognition.onerror = (event) => {
+                document.getElementById('response').innerText = "Error occurred: " + event.error;
+            };
+
+            recognition.start();
+        };
+
+        // Detect emotion based on speech patterns
+        const detectEmotion = (userInput) => {
+            const wordCount = userInput.split(" ").length;
+
+            // Simple emotion detection rules
+            if (wordCount < 5) {
+                return "depression"; // Few words indicate possible depression
+            } else if (wordCount > 10) {
+                return "stress"; // Long speech indicates stress
+            } else {
+                return "calm"; // Default to calm
+            }
+        };
+    </script>
+</body>
+</html>
